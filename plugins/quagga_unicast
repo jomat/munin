@@ -1,0 +1,32 @@
+#!/bin/sh
+#
+#
+# Munin Plugin to show quagga bgp4 routes
+# Standard Config Section Begin ##
+  if [ "$1" = "autoconf" ]; then
+        echo yes
+        exit 0
+  fi
+
+  if [ "$1" = "config" ]; then
+
+       echo 'graph_title BGP IPv4 Unicast RIB statistics'
+       echo 'graph_args --base 1000 -l 0'
+       echo 'graph_scale yes'
+       echo 'graph_vlabel BGP IPv4 Unicast RIB statistics'
+       echo 'graph_category Quagga'
+cat << EOF
+LA.label Longest AS-Path (hops)
+AA.label Average AS-Path length (hops)
+LAb.label Largest AS-Path (bytes)
+AAb.label Average AS-Path size (bytes)
+EOF
+       echo 'graph_info Route information provided by quagga daemon via vtysh'
+       exit 0
+  fi
+# Standard Config Section End ####
+
+vtysh -c "show bgp ipv4 unicast statistics"|tr -s \ |sed 's/[ \(\)]/_/g'|grep -v 'BGP_IPv4_Unicast_RIB_statistics'|sed 's/_:_/.value /'|grep AS-Path|sed 's/Longest_AS-Path__hops_/LA/'|sed 's/Average_AS-Path_length__hops_/AA/'|sed 's/Largest_AS-Path__bytes_/LAb/'|sed 's/Average_AS-Path_size__bytes_/AAb/'
+
+# Measure Section ##########
+
